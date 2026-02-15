@@ -1,100 +1,113 @@
-# IndieBook - Personal eBook Reader
+# 📚 Indiebook - ระบบขายหนังสืออิเล็กทรอนิกส์
 
-A lightweight, fast PDF reader built with Vite + React + Hono.
-
-## ✨ Features
-
-- 📚 **PDF Reading**: Smooth PDF viewing with zoom controls
-- 📖 **Page Navigation**: Easy page-by-page reading
-- 💾 **Personal Library**: Organize your book collection
-- ⬆️ **Easy Upload**: Drag & drop PDF files
-- 🎨 **Clean UI**: Modern, beautiful interface with Tailwind CSS
-- ⚡ **Fast**: Built with Vite for instant dev server and fast builds
-- 🪶 **Lightweight**: Minimal dependencies, optimized for performance
-
-## 🚀 Tech Stack
-
-- **Frontend**: Vite, React 18, TypeScript
-- **Backend**: Hono (lightweight, fast)
-- **PDF**: react-pdf, pdfjs-dist
-- **Styling**: Tailwind CSS 4
-- **Storage**: localStorage + file system
-- **Icons**: Lucide React
-
-## 📦 Installation
-
-```bash
-# Install dependencies for both frontend and backend
-cd frontend && npm install && cd ..
-cd backend && npm install && cd ..
-
-# Install root dependencies (concurrently)
-npm install
-```
-
-## 🏃 Running
-
-```bash
-# Start both frontend and backend
-npm run dev
-
-# Or run separately:
-npm run dev:frontend  # Vite on port 5173
-npm run dev:backend   # Hono on port 3001
-```
-
-Open http://localhost:5173
-
-## 📁 Project Structure
-
-```
-indiebook/
-├── frontend/              # Vite + React app
-│   ├── src/
-│   │   ├── pages/        # HomePage, LibraryPage, UploadPage, ReaderPage
-│   │   ├── components/   # Reusable components
-│   │   └── App.tsx       # Main app component
-│   └── public/
-│       └── uploads/      # Uploaded PDF files
-├── backend/              # Hono API
-│   └── src/
-│       ├── routes/       # API routes
-│       └── index.ts      # Main server
-└── shared/               # Shared types/utils
-```
-
-## 🎯 Usage
-
-1. **Upload a Book**: Click "Upload" and select a PDF file
-2. **Browse Library**: View all your uploaded books
-3. **Read**: Click on any book to open the reader
-4. **Navigate**: Use arrow buttons or keyboard to turn pages
-5. **Zoom**: Adjust zoom level for comfortable reading
-
-## 💾 Data Storage
-
-- Books metadata stored in localStorage
-- PDF files saved in `frontend/public/uploads/`
-
-## 🚀 Deployment
-
-Deploy to Cloudflare Workers:
-
-```bash
-cd frontend
-npm run build
-
-cd ../backend
-npm run build
-
-# Deploy with Cloudflare
-# (Follow Cloudflare Workers deployment guide)
-```
-
-## 📝 License
-
-Private project - All rights reserved
+ระบบร้านค้าหนังสือดิจิทัล พร้อมระบบชำระเงิน PromptPay และการยืนยันคำสั่งซื้อจาก Admin
 
 ---
 
-Built with ❤️ using Nxcode templates
+## 🎯 คุณสมบัติหลัก
+
+### 🏪 สำหรับลูกค้า
+- ✅ เรียกดูหนังสือในร้านค้า พร้อมรูปปกสวยงาม
+- ✅ ค้นหาหนังสือด้วยชื่อหรือผู้แต่ง
+- ✅ กรองตามหมวดหมู่ (โปรแกรมมิ่ง, ธุรกิจ, การตลาด, ฯลฯ)
+- ✅ เพิ่มหนังสือลงตระกร้า
+- ✅ ชำระเงินผ่าน PromptPay QR Code (เบอร์ 0864739692)
+- ✅ อัพโหลดสลิปการโอนเงิน
+- ✅ รอการยืนยันจาก Admin
+- ✅ อ่านหนังสือที่ซื้อแล้ว (หลัง Admin อนุมัติ)
+- ✅ อ่าน PDF ในเบราว์เซอร์ด้วย react-pdf
+
+### 🔐 สำหรับ Admin
+- ✅ เข้าสู่ระบบด้วย username/password (aliceAI / pad.udon@gmail.com)
+- ✅ Dashboard แสดงสถิติหนังสือและคำสั่งซื้อ
+- ✅ แจ้งเตือนคำสั่งซื้อรอยืนยัน
+- ✅ ตรวจสอบและอนุมัติคำสั่งซื้อ
+- ✅ ดูสลิปการโอนเงิน (Fullscreen preview)
+- ✅ ปฏิเสธคำสั่งซื้อพร้อมระบุเหตุผล
+- ✅ **อัพโหลดหนังสือใหม่** พร้อมรูปปกและไฟล์ PDF
+- ✅ จัดการหนังสือ (ดู/ลบ)
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React 18 + TypeScript
+- **Build Tool:** Vite 6
+- **Styling:** Tailwind CSS 4
+- **Icons:** Lucide React
+- **PDF Viewer:** react-pdf
+- **Backend:** Hono
+- **Storage:** localStorage (demo)
+- **Payment:** PromptPay QR Code API
+
+---
+
+## 🚀 การติดตั้งและรัน
+
+```bash
+cd frontend
+npm install
+npm run dev -- --host 0.0.0.0
+```
+
+เปิดเบราว์เซอร์: `http://localhost:5173`
+
+---
+
+## 💳 ข้อมูลระบบชำระเงิน
+
+**PromptPay:** 0864739692
+
+**QR Code API:** `https://promptpay.io/0864739692/{amount}.png`
+
+---
+
+## 🔐 ข้อมูล Admin
+
+**Username:** aliceAI  
+**Password:** pad.udon@gmail.com
+
+---
+
+## 📱 ฟีเจอร์หลักทั้งหมด
+
+1. **HomePage** - หน้าแรก + CTA
+2. **StorePage** - ร้านค้า + รูปปกหนังสือ
+3. **CartPage** - ตระกร้าสินค้า
+4. **CheckoutPage** - ชำระเงิน + QR Code
+5. **CheckoutSuccessPage** - รอยืนยัน
+6. **MyBooksPage** - หนังสือของฉัน
+7. **PDFReaderPage** - อ่าน PDF
+8. **AdminLoginPage** - Login Admin
+9. **AdminPage** - Dashboard Admin
+10. **AdminOrdersPage** - ยืนยันคำสั่งซื้อ
+11. **AdminUploadBookPage** - อัพโหลดหนังสือใหม่
+
+---
+
+## 📚 เอกสารเพิ่มเติม
+
+- **ADMIN_SYSTEM.md** - เอกสารระบบ Admin แบบละเอียด
+- **UPLOAD_FEATURE.md** - เอกสารระบบอัพโหลดหนังสือแบบละเอียด
+
+---
+
+## ✅ Features Complete
+
+- [x] ร้านค้าหนังสือพร้อมค้นหาและกรอง
+- [x] ตระกร้าสินค้า
+- [x] ชำระเงิน PromptPay QR Code
+- [x] อัพโหลดสลิปการโอนเงิน
+- [x] ระบบ Pending Orders
+- [x] Admin Login
+- [x] Admin อนุมัติ/ปฏิเสธคำสั่งซื้อ
+- [x] แสดงสลิปแบบ fullscreen
+- [x] อ่าน PDF ในเบราว์เซอร์
+- [x] Admin อัพโหลดหนังสือใหม่
+- [x] อัพโหลดรูปปกพร้อม preview
+- [x] แสดงรูปปกในร้านค้า
+- [x] Protected admin routes
+
+---
+
+**สร้างด้วย ❤️ โดย Vite + React + Hono + Tailwind CSS**
