@@ -36,8 +36,9 @@
 - **Styling:** Tailwind CSS 4
 - **Icons:** Lucide React
 - **PDF Viewer:** react-pdf
-- **Backend:** Hono
-- **Storage:** localStorage (demo)
+- **Database:** Supabase (PostgreSQL)
+- **Storage:** Supabase Storage (R2-compatible)
+- **Deployment:** Cloudflare Workers
 - **Payment:** PromptPay QR Code API
 
 ---
@@ -89,6 +90,8 @@ npm run dev -- --host 0.0.0.0
 
 - **ADMIN_SYSTEM.md** - เอกสารระบบ Admin แบบละเอียด
 - **UPLOAD_FEATURE.md** - เอกสารระบบอัพโหลดหนังสือแบบละเอียด
+- **DATABASE_MIGRATION.md** - คู่มือการ migrate ไป Supabase
+- **supabase-schema.sql** - SQL Schema สำหรับสร้าง database
 
 ---
 
@@ -107,6 +110,10 @@ npm run dev -- --host 0.0.0.0
 - [x] อัพโหลดรูปปกพร้อม preview
 - [x] แสดงรูปปกในร้านค้า
 - [x] Protected admin routes
+- [x] **Supabase Database Integration**
+- [x] **File Upload to Supabase Storage**
+- [x] **Multi-user Support**
+- [x] **Production Deployment**
 
 ---
 
