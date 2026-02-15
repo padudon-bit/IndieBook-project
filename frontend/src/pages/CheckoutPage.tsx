@@ -111,13 +111,18 @@ export default function CheckoutPage({ onNavigate, cartItems, onPaymentComplete 
             {/* QR Code */}
             <div className="text-center">
               <div className="inline-block p-8 bg-gray-50 rounded-lg mb-6">
-                <div className="w-64 h-64 bg-white border-4 border-gray-300 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <QrCode className="h-32 w-32 text-gray-400 mx-auto mb-4" />
-                    <p className="text-sm text-gray-500">QR Code PromptPay</p>
-                    <p className="text-xs text-gray-400 mt-2">จำนวน ฿{totalPrice.toLocaleString()}</p>
-                  </div>
+                <div className="w-64 h-64 bg-white border-4 border-blue-200 rounded-lg overflow-hidden">
+                  <img
+                    src={`https://promptpay.io/0864739692/${totalPrice}.png`}
+                    alt="QR Code PromptPay"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      // ถ้าโหลดไม่ได้ ให้แสดง fallback
+                      e.currentTarget.src = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=0864739692`
+                    }}
+                  />
                 </div>
+                <p className="text-xs text-gray-500 mt-2">สแกน QR Code เพื่อชำระเงิน</p>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
