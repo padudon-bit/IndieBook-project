@@ -147,10 +147,10 @@ export default function StorePage({ onNavigate, onAddToCart }: StorePageProps) {
                 <img
                   src={book.coverImage}
                   alt={book.title}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-64 object-cover"
                 />
               ) : (
-                <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="h-64 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                   <BookOpen className="h-16 w-16 text-white opacity-50" />
                 </div>
               )}
