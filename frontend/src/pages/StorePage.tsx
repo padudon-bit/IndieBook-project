@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
-import { BookOpen, ShoppingCart, Search, Tag } from 'lucide-react'
+import { useState } from 'react'
+import { BookOpen, ShoppingCart, Search, Tag, Loader } from 'lucide-react'
+import { useBooks } from '../hooks/useBooks'
+import { Book as DBBook } from '../lib/supabase'
 
 interface Book {
   id: string
@@ -18,58 +20,27 @@ interface StorePageProps {
   onAddToCart: (book: Book) => void
 }
 
-export default function StorePage({ onNavigate, onAddToCart }: StorePageProps) {
-  const [books, setBooks] = useState<Book[]>([])
+// Convert database book to app book format
+function convertBook(dbBook: DBBook): Book {
+  return {
+    id: dbBook.id,
+    title: dbBook.title,
+    author: dbBook.author,
+    description: dbBook.description,
+    price: dbBook.price,
+    category: dbBook.category,
+    fileName: dbBook.file_name,
+    fileUrl: dbBook.file_url,
+    coverImage: dbBook.cover_image_url || undefined
+  }
+}
+
+export default function StorePage({ onAddToCart }: StorePageProps) {
+  const { books: dbBooks, loading } = useBooks()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด')
 
-  useEffect(() => {
-    loadBooks()
-  }, [])
-
-  const loadBooks = () => {
-    // โหลดหนังสือจาก localStorage (ในระบบจริงจะดึงจาก API)
-    const storedBooks = localStorage.getItem('indiebook_store_books')
-    if (storedBooks) {
-      setBooks(JSON.parse(storedBooks))
-    } else {
-      // หนังสือตัวอย่าง
-      const sampleBooks: Book[] = [
-        {
-          id: '1',
-          title: 'พื้นฐาน JavaScript สำหรับมือใหม่',
-          author: 'สมชาย ใจดี',
-          description: 'เรียนรู้ JavaScript ตั้งแต่พื้นฐานจนถึงขั้นสูง',
-          price: 299,
-          category: 'โปรแกรมมิ่ง',
-          fileName: 'javascript-basics.pdf',
-          fileUrl: '/sample/javascript.pdf'
-        },
-        {
-          id: '2',
-          title: 'React ฉบับเข้าใจง่าย',
-          author: 'สมหญิง โค้ดดี',
-          description: 'สร้าง Web Application ด้วย React',
-          price: 399,
-          category: 'โปรแกรมมิ่ง',
-          fileName: 'react-guide.pdf',
-          fileUrl: '/sample/react.pdf'
-        },
-        {
-          id: '3',
-          title: 'การบริหารธุรกิจยุคดิจิทัล',
-          author: 'ดร.วิทยา ธุรกิจดี',
-          description: 'กลยุทธ์การทำธุรกิจในยุค Digital',
-          price: 499,
-          category: 'ธุรกิจ',
-          fileName: 'digital-business.pdf',
-          fileUrl: '/sample/business.pdf'
-        }
-      ]
-      localStorage.setItem('indiebook_store_books', JSON.stringify(sampleBooks))
-      setBooks(sampleBooks)
-    }
-  }
+  const books = dbBooks.map(convertBook)
 
   const categories = ['ทั้งหมด', ...new Set(books.map(book => book.category))]
 
@@ -129,7 +100,12 @@ export default function StorePage({ onNavigate, onAddToCart }: StorePageProps) {
       </div>
 
       {/* Books Grid */}
-      {filteredBooks.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <Loader className="mx-auto h-12 w-12 text-blue-600 animate-spin" />
+          <p className="mt-3 text-gray-600">กำลังโหลดหนังสือ...</p>
+        </div>
+      ) : filteredBooks.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
           <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">ไม่พบหนังสือ</h3>

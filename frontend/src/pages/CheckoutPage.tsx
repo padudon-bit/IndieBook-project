@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { QrCode, CheckCircle, Upload, ArrowLeft } from 'lucide-react'
+import { CheckCircle, Upload, ArrowLeft } from 'lucide-react'
+import { useOrders } from '../hooks/useOrders'
 
 interface CartItem {
   id: string
@@ -14,13 +15,17 @@ interface CheckoutPageProps {
   onNavigate: (page: string) => void
   cartItems: CartItem[]
   onPaymentComplete: () => void
+  customerEmail?: string
 }
 
-export default function CheckoutPage({ onNavigate, cartItems, onPaymentComplete }: CheckoutPageProps) {
+export default function CheckoutPage({ onNavigate, cartItems, onPaymentComplete, customerEmail = 'guest@example.com' }: CheckoutPageProps) {
+  const { createOrder } = useOrders()
   const [paymentStep, setPaymentStep] = useState<'qr' | 'upload' | 'waiting'>('qr')
   const [slip, setSlip] = useState<File | null>(null)
   const [slipPreview, setSlipPreview] = useState<string>('')
   const [uploading, setUploading] = useState(false)
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0)
 
@@ -38,41 +43,52 @@ export default function CheckoutPage({ onNavigate, cartItems, onPaymentComplete 
     }
   }
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     if (!slip) {
       alert('กรุณาอัพโหลดหลักฐานการชำระเงิน')
       return
     }
 
+    if (!customerName || !customerPhone) {
+      alert('กรุณากรอกชื่อและเบอร์โทรศัพท์')
+      return
+    }
+
     setUploading(true)
 
-    // จำลองการอัพโหลด
-    setTimeout(() => {
-      setUploading(false)
+    try {
+      // สร้าง order items
+      const orderItems = cartItems.map(item => ({
+        book_id: item.id,
+        price: item.price
+      }))
 
-      // สร้าง order ID
-      const orderId = `ORD-${Date.now()}`
+      // บันทึกคำสั่งซื้อ
+      const { error } = await createOrder(
+        {
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+          total_amount: totalPrice,
+          slip_image: slipPreview // ใช้ base64 (ในระบบจริงอัพโหลดไปที่อื่น)
+        },
+        orderItems
+      )
 
-      // บันทึกคำสั่งซื้อรอยืนยัน
-      const pendingOrders = JSON.parse(localStorage.getItem('indiebook_pending_orders') || '[]')
-      const newOrder = {
-        orderId,
-        customerName: 'ลูกค้า', // ในระบบจริงจะมี user login
-        items: cartItems,
-        totalAmount: totalPrice,
-        slipUrl: slipPreview, // ใช้ base64 เพื่อ demo (ในระบบจริงอัพโหลดไป server)
-        submitTime: new Date().toISOString(),
-        status: 'pending'
+      if (error) {
+        throw new Error(error)
       }
-      pendingOrders.push(newOrder)
-      localStorage.setItem('indiebook_pending_orders', JSON.stringify(pendingOrders))
 
       // เคลียร์ตระกร้า
       onPaymentComplete()
 
       // ไปหน้ารอยืนยัน
       setPaymentStep('waiting')
-    }, 1500)
+    } catch (error) {
+      alert(`❌ เกิดข้อผิดพลาด: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -158,7 +174,38 @@ export default function CheckoutPage({ onNavigate, cartItems, onPaymentComplete 
           </div>
 
           <div className="bg-white rounded-lg shadow-lg border p-8">
-            <div className="mb-6">
+            {/* ข้อมูลลูกค้า */}
+            <div className="mb-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="เช่น สมชาย ใจดี"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="เช่น 0812345678"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="mb-6 pt-6 border-t">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 หลักฐานการชำระเงิน (สลิป)
               </label>

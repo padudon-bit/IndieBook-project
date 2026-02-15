@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { ShoppingCart, Trash2, ArrowLeft, CreditCard } from 'lucide-react'
 
 interface CartItem {

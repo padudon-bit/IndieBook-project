@@ -1,80 +1,33 @@
-import { useState, useEffect } from 'react'
-import { BarChart3, BookOpen, Users, Trash2, Search, ShoppingBag, Bell, Plus } from 'lucide-react'
-
-interface Book {
-  id: string
-  title: string
-  fileName: string
-  fileUrl: string
-  uploadedAt: string
-  pageCount: number
-}
+import { useState } from 'react'
+import { BarChart3, BookOpen, Trash2, Search, ShoppingBag, Bell, Plus, Loader } from 'lucide-react'
+import { useBooks } from '../hooks/useBooks'
+import { useOrders } from '../hooks/useOrders'
 
 interface AdminPageProps {
   onNavigate: (page: string) => void
 }
 
 export default function AdminPage({ onNavigate }: AdminPageProps) {
-  const [books, setBooks] = useState<Book[]>([])
+  const { books, loading: booksLoading, deleteBook: deleteBookFromDB } = useBooks()
+  const { orders } = useOrders()
   const [searchQuery, setSearchQuery] = useState('')
-  const [stats, setStats] = useState({
-    totalBooks: 0,
-    totalPages: 0,
-    totalSize: 0
-  })
 
-  useEffect(() => {
-    loadBooks()
-    loadPendingOrders()
-  }, [])
+  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length
 
-  const [pendingOrdersCount, setPendingOrdersCount] = useState(0)
-
-  const loadPendingOrders = () => {
-    const orders = JSON.parse(localStorage.getItem('indiebook_pending_orders') || '[]')
-    const pending = orders.filter((o: any) => o.status === 'pending').length
-    setPendingOrdersCount(pending)
-  }
-
-  const loadBooks = () => {
-    const storedBooks = localStorage.getItem('indiebook_books')
-    if (storedBooks) {
-      const booksData = JSON.parse(storedBooks)
-      setBooks(booksData)
-
-      // Calculate stats
-      const totalPages = booksData.reduce((sum: number, book: Book) => sum + (book.pageCount || 0), 0)
-      setStats({
-        totalBooks: booksData.length,
-        totalPages,
-        totalSize: 0
-      })
-    }
-  }
-
-  const deleteBook = (bookId: string) => {
+  const handleDeleteBook = async (bookId: string) => {
     if (confirm('คุณแน่ใจหรือไม่ที่จะลบหนังสือเล่มนี้?')) {
-      const updatedBooks = books.filter(book => book.id !== bookId)
-      setBooks(updatedBooks)
-      localStorage.setItem('indiebook_books', JSON.stringify(updatedBooks))
-      loadBooks()
-    }
-  }
-
-  const clearAllBooks = () => {
-    if (confirm('⚠️ คำเตือน: คุณต้องการลบหนังสือทั้งหมดใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้!')) {
-      if (confirm('กรุณายืนยันอีกครั้ง - หนังสือทั้งหมดจะถูกลบถาวร')) {
-        localStorage.removeItem('indiebook_books')
-        setBooks([])
-        loadBooks()
-        alert('ลบหนังสือทั้งหมดเรียบร้อย')
+      const { error } = await deleteBookFromDB(bookId)
+      if (error) {
+        alert(`❌ เกิดข้อผิดพลาด: ${error}`)
+      } else {
+        alert('✅ ลบหนังสือเรียบร้อยแล้ว')
       }
     }
   }
 
   const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    book.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+    book.file_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -132,7 +85,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
             <div className="ml-5 w-0 flex-1">
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">หนังสือทั้งหมด</dt>
-                <dd className="text-3xl font-semibold text-gray-900">{stats.totalBooks}</dd>
+                <dd className="text-3xl font-semibold text-gray-900">{books.length}</dd>
               </dl>
             </div>
           </div>
@@ -145,8 +98,8 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">หน้าทั้งหมด</dt>
-                <dd className="text-3xl font-semibold text-gray-900">{stats.totalPages}</dd>
+                <dt className="text-sm font-medium text-gray-500 truncate">คำสั่งซื้อทั้งหมด</dt>
+                <dd className="text-3xl font-semibold text-gray-900">{orders.length}</dd>
               </dl>
             </div>
           </div>
@@ -155,12 +108,12 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
-              <Users className="h-6 w-6 text-white" />
+              <ShoppingBag className="h-6 w-6 text-white" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">ผู้ใช้งาน</dt>
-                <dd className="text-3xl font-semibold text-gray-900">1</dd>
+                <dt className="text-sm font-medium text-gray-500 truncate">รออนุมัติ</dt>
+                <dd className="text-3xl font-semibold text-gray-900">{pendingOrdersCount}</dd>
               </dl>
             </div>
           </div>
@@ -181,77 +134,86 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
             placeholder="ค้นหาหนังสือ..."
           />
         </div>
-        <button
-          onClick={clearAllBooks}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium"
-        >
-          ลบทั้งหมด
-        </button>
       </div>
 
       {/* Books Table */}
-      <div className="bg-white shadow-sm rounded-lg border overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                หนังสือ
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ไฟล์
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                จำนวนหน้า
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                วันที่อัพโหลด
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                จัดการ
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredBooks.length === 0 ? (
+      {booksLoading ? (
+        <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
+          <Loader className="mx-auto h-12 w-12 text-blue-600 animate-spin" />
+          <p className="mt-3 text-gray-600">กำลังโหลดหนังสือ...</p>
+        </div>
+      ) : (
+        <div className="bg-white shadow-sm rounded-lg border overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  {searchQuery ? 'ไม่พบหนังสือที่ค้นหา' : 'ยังไม่มีหนังสือ'}
-                </td>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  หนังสือ
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ผู้แต่ง
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  หมวดหมู่
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ราคา
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  วันที่อัพโหลด
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  จัดการ
+                </th>
               </tr>
-            ) : (
-              filteredBooks.map((book) => (
-                <tr key={book.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <BookOpen className="h-5 w-5 text-blue-600 mr-3" />
-                      <div className="text-sm font-medium text-gray-900">{book.title}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{book.fileName}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{book.pageCount || '-'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {new Date(book.uploadedAt).toLocaleDateString('th-TH')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => deleteBook(book.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredBooks.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    {searchQuery ? 'ไม่พบหนังสือที่ค้นหา' : 'ยังไม่มีหนังสือ'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                filteredBooks.map((book) => (
+                  <tr key={book.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <BookOpen className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0" />
+                        <div className="text-sm font-medium text-gray-900">{book.title}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{book.author}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {book.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">฿{book.price}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">
+                        {new Date(book.uploaded_at).toLocaleDateString('th-TH')}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleDeleteBook(book.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Back Button */}
       <div className="mt-6">

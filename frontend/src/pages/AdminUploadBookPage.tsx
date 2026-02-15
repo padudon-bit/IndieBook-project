@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { Upload, BookOpen, DollarSign, Image as ImageIcon, ArrowLeft, Tag } from 'lucide-react'
+import { uploadFile } from '../lib/supabase'
+import { useBooks } from '../hooks/useBooks'
 
 interface AdminUploadBookPageProps {
   onNavigate: (page: string) => void
 }
 
 export default function AdminUploadBookPage({ onNavigate }: AdminUploadBookPageProps) {
+  const { addBook } = useBooks()
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [description, setDescription] = useState('')
@@ -72,31 +75,40 @@ export default function AdminUploadBookPage({ onNavigate }: AdminUploadBookPageP
 
     setUploading(true)
 
-    // จำลองการอัพโหลด (ในระบบจริงจะส่งไป backend)
-    setTimeout(() => {
-      // สร้าง ID ใหม่
-      const newBookId = `book-${Date.now()}`
+    try {
+      // 1. อัพโหลด PDF ไป Supabase Storage
+      const timestamp = Date.now()
+      const pdfFileName = `${timestamp}-${pdfFile.name}`
+      const { url: pdfUrl, error: pdfError } = await uploadFile('book-files', pdfFile, pdfFileName)
 
-      // สร้างข้อมูลหนังสือ
-      const newBook = {
-        id: newBookId,
+      if (pdfError || !pdfUrl) {
+        throw new Error('ไม่สามารถอัพโหลดไฟล์ PDF ได้: ' + pdfError?.message)
+      }
+
+      // 2. อัพโหลดรูปปกไป Supabase Storage
+      const coverFileName = `${timestamp}-${coverImage.name}`
+      const { url: coverUrl, error: coverError } = await uploadFile('book-covers', coverImage, coverFileName)
+
+      if (coverError || !coverUrl) {
+        throw new Error('ไม่สามารถอัพโหลดรูปปกได้: ' + coverError?.message)
+      }
+
+      // 3. บันทึกข้อมูลหนังสือลง database
+      const { error: dbError } = await addBook({
         title,
         author,
         description,
         price: parseFloat(price),
         category,
-        fileName: pdfFile.name,
-        fileUrl: `/uploads/${pdfFile.name}`, // ในระบบจริงจะเป็น URL จาก server
-        coverImage: coverPreview, // ใช้ base64 สำหรับ demo
-        uploadedAt: new Date().toISOString()
+        file_name: pdfFile.name,
+        file_url: pdfUrl,
+        cover_image_url: coverUrl
+      })
+
+      if (dbError) {
+        throw new Error('ไม่สามารถบันทึกข้อมูลหนังสือได้: ' + dbError)
       }
 
-      // เพิ่มเข้าไปใน store books
-      const storeBooks = JSON.parse(localStorage.getItem('indiebook_store_books') || '[]')
-      storeBooks.push(newBook)
-      localStorage.setItem('indiebook_store_books', JSON.stringify(storeBooks))
-
-      setUploading(false)
       alert(`✅ เพิ่มหนังสือ "${title}" เรียบร้อยแล้ว!`)
 
       // Reset form
@@ -111,7 +123,11 @@ export default function AdminUploadBookPage({ onNavigate }: AdminUploadBookPageP
 
       // กลับไป Admin
       onNavigate('admin')
-    }, 2000)
+    } catch (error) {
+      alert(`❌ เกิดข้อผิดพลาด: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
