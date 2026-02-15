@@ -1,6 +1,7 @@
 import { Providers } from './components/Providers'
 import { useState, useEffect } from 'react'
-import { BookOpen, ShoppingCart, Library as LibraryIcon, Shield, Store, LogOut } from 'lucide-react'
+import { BookOpen, ShoppingCart, Library as LibraryIcon, Shield, Store, LogOut, User as UserIcon } from 'lucide-react'
+import { useAuth } from './hooks/useAuth'
 import HomePage from './pages/HomePage'
 import StorePage from './pages/StorePage'
 import CartPage from './pages/CartPage'
@@ -11,8 +12,12 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import AdminPage from './pages/AdminPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
 import AdminUploadBookPage from './pages/AdminUploadBookPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ProfilePage from './pages/ProfilePage'
 
-type Page = 'home' | 'store' | 'cart' | 'checkout' | 'my-books' | 'reader' | 'admin-login' | 'admin' | 'admin-orders' | 'admin-upload'
+type Page = 'home' | 'store' | 'cart' | 'checkout' | 'my-books' | 'reader' | 'admin-login' | 'admin' | 'admin-orders' | 'admin-upload' | 'login' | 'register' | 'forgot-password' | 'profile'
 
 interface CartItem {
   id: string
@@ -25,6 +30,7 @@ interface CartItem {
 }
 
 function App() {
+  const { user, isAuthenticated } = useAuth()
   const [currentPage, setCurrentPage] = useState<Page>('home')
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -97,7 +103,19 @@ function App() {
         return
       }
     }
+
+    // ถ้าพยายามซื้อหนังสือ (checkout, my-books) แต่ยังไม่ login
+    if ((page === 'checkout' || page === 'my-books') && !isAuthenticated) {
+      alert('กรุณาเข้าสู่ระบบก่อนดำเนินการ')
+      setCurrentPage('login')
+      return
+    }
+
     setCurrentPage(page as Page)
+  }
+
+  const handleUserLogout = () => {
+    // จะถูกจัดการใน ProfilePage
   }
 
   const renderPage = () => {
@@ -121,12 +139,37 @@ function App() {
             onNavigate={handleNavigate}
             cartItems={cartItems}
             onPaymentComplete={handlePaymentComplete}
+            customerEmail={user?.email}
           />
         )
       case 'my-books':
-        return <MyBooksPage onNavigate={handleNavigate} onOpenBook={openReader} />
+        return (
+          <MyBooksPage
+            onNavigate={handleNavigate}
+            onOpenBook={openReader}
+            customerEmail={user?.email}
+          />
+        )
       case 'reader':
         return <ReaderPage bookId={selectedBookId} onNavigate={handleNavigate} />
+      case 'login':
+        return (
+          <LoginPage
+            onNavigate={handleNavigate}
+            onLoginSuccess={() => setCurrentPage('store')}
+          />
+        )
+      case 'register':
+        return (
+          <RegisterPage
+            onNavigate={handleNavigate}
+            onRegisterSuccess={() => {}}
+          />
+        )
+      case 'forgot-password':
+        return <ForgotPasswordPage onNavigate={handleNavigate} />
+      case 'profile':
+        return <ProfilePage onNavigate={handleNavigate} onLogout={handleUserLogout} />
       case 'admin-login':
         return <AdminLoginPage onLogin={handleAdminLogin} onNavigate={handleNavigate} />
       case 'admin':
@@ -168,17 +211,19 @@ function App() {
                         <Store className="h-4 w-4 mr-1" />
                         ร้านค้า
                       </button>
-                      <button
-                        onClick={() => handleNavigate('my-books')}
-                        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
-                          currentPage === 'my-books'
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                        }`}
-                      >
-                        <LibraryIcon className="h-4 w-4 mr-1" />
-                        หนังสือของฉัน
-                      </button>
+                      {isAuthenticated && (
+                        <button
+                          onClick={() => handleNavigate('my-books')}
+                          className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                            currentPage === 'my-books'
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          <LibraryIcon className="h-4 w-4 mr-1" />
+                          หนังสือของฉัน
+                        </button>
+                      )}
                       <button
                         onClick={() => handleNavigate('cart')}
                         className="flex items-center bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium relative"
@@ -191,6 +236,29 @@ function App() {
                           </span>
                         )}
                       </button>
+
+                      {isAuthenticated ? (
+                        <button
+                          onClick={() => handleNavigate('profile')}
+                          className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                            currentPage === 'profile'
+                              ? 'bg-green-50 text-green-700'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          <UserIcon className="h-4 w-4 mr-1" />
+                          {user?.name || 'โปรไฟล์'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleNavigate('login')}
+                          className="flex items-center px-3 py-2 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700"
+                        >
+                          <UserIcon className="h-4 w-4 mr-1" />
+                          เข้าสู่ระบบ
+                        </button>
+                      )}
+
                       <button
                         onClick={() => handleNavigate('admin-login')}
                         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
