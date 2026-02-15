@@ -10,8 +10,9 @@ import ReaderPage from './pages/ReaderPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminPage from './pages/AdminPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
+import AdminUploadBookPage from './pages/AdminUploadBookPage'
 
-type Page = 'home' | 'store' | 'cart' | 'checkout' | 'my-books' | 'reader' | 'admin-login' | 'admin' | 'admin-orders'
+type Page = 'home' | 'store' | 'cart' | 'checkout' | 'my-books' | 'reader' | 'admin-login' | 'admin' | 'admin-orders' | 'admin-upload'
 
 interface CartItem {
   id: string
@@ -90,7 +91,7 @@ function App() {
 
   const handleNavigate = (page: string) => {
     // ถ้าพยายามเข้าหน้า admin แต่ยังไม่ login
-    if (page === 'admin' || page === 'admin-orders') {
+    if (page === 'admin' || page === 'admin-orders' || page === 'admin-upload') {
       if (!isAdminLoggedIn) {
         setCurrentPage('admin-login')
         return
@@ -132,6 +133,8 @@ function App() {
         return <AdminPage onNavigate={handleNavigate} />
       case 'admin-orders':
         return <AdminOrdersPage onNavigate={handleNavigate} />
+      case 'admin-upload':
+        return <AdminUploadBookPage onNavigate={handleNavigate} />
       default:
         return <HomePage onNavigate={handleNavigate} />
     }

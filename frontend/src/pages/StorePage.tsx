@@ -143,9 +143,17 @@ export default function StorePage({ onNavigate, onAddToCart }: StorePageProps) {
               className="bg-white rounded-lg shadow-sm border hover:shadow-lg transition-all duration-300 overflow-hidden group"
             >
               {/* Cover Image */}
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <BookOpen className="h-16 w-16 text-white opacity-50" />
-              </div>
+              {book.coverImage ? (
+                <img
+                  src={book.coverImage}
+                  alt={book.title}
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <BookOpen className="h-16 w-16 text-white opacity-50" />
+                </div>
+              )}
 
               {/* Book Info */}
               <div className="p-5">

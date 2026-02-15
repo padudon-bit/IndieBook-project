@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, BookOpen, Users, Trash2, Search, ShoppingBag, Bell } from 'lucide-react'
+import { BarChart3, BookOpen, Users, Trash2, Search, ShoppingBag, Bell, Plus } from 'lucide-react'
 
 interface Book {
   id: string
@@ -80,11 +80,20 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">แดชบอร์ดผู้ดูแลระบบ</h2>
-        <p className="mt-2 text-gray-600">
-          จัดการหนังสือและดูสถิติการใช้งาน
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">แดชบอร์ดผู้ดูแลระบบ</h2>
+          <p className="mt-2 text-gray-600">
+            จัดการหนังสือและดูสถิติการใช้งาน
+          </p>
+        </div>
+        <button
+          onClick={() => onNavigate('admin-upload')}
+          className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium shadow-lg"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          เพิ่มหนังสือใหม่
+        </button>
       </div>
 
       {/* Pending Orders Alert */}
