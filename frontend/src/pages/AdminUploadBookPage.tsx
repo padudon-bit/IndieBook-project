@@ -292,7 +292,7 @@ export default function AdminUploadBookPage({ onNavigate }: AdminUploadBookPageP
                 />
               </label>
               <p className="mt-1 text-xs text-gray-500">
-                ไฟล์ PDF เท่านั้น (ไม่เกิน 50MB)
+                ไฟล์ PDF เท่านั้น (ไม่เกิน 150MB)
               </p>
               {pdfFile && (
                 <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
