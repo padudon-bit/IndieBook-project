@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, BookOpen, Users, Trash2, Search } from 'lucide-react'
+import { BarChart3, BookOpen, Users, Trash2, Search, ShoppingBag, Bell } from 'lucide-react'
 
 interface Book {
   id: string
@@ -11,7 +11,7 @@ interface Book {
 }
 
 interface AdminPageProps {
-  onNavigate: (page: 'home' | 'library' | 'upload' | 'reader' | 'admin') => void
+  onNavigate: (page: string) => void
 }
 
 export default function AdminPage({ onNavigate }: AdminPageProps) {
@@ -25,7 +25,16 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
 
   useEffect(() => {
     loadBooks()
+    loadPendingOrders()
   }, [])
+
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0)
+
+  const loadPendingOrders = () => {
+    const orders = JSON.parse(localStorage.getItem('indiebook_pending_orders') || '[]')
+    const pending = orders.filter((o: any) => o.status === 'pending').length
+    setPendingOrdersCount(pending)
+  }
 
   const loadBooks = () => {
     const storedBooks = localStorage.getItem('indiebook_books')
@@ -77,6 +86,32 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
           จัดการหนังสือและดูสถิติการใช้งาน
         </p>
       </div>
+
+      {/* Pending Orders Alert */}
+      {pendingOrdersCount > 0 && (
+        <div className="mb-6 bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Bell className="h-8 w-8 text-yellow-600 mr-3 animate-bounce" />
+              <div>
+                <h3 className="text-lg font-semibold text-yellow-900">
+                  มีคำสั่งซื้อรอยืนยัน {pendingOrdersCount} รายการ!
+                </h3>
+                <p className="text-sm text-yellow-700">
+                  กรุณาตรวจสอบและอนุมัติคำสั่งซื้อ
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate('admin-orders')}
+              className="flex items-center px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium"
+            >
+              <ShoppingBag className="h-5 w-5 mr-2" />
+              ดูคำสั่งซื้อ
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
