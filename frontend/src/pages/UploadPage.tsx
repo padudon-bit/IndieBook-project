@@ -38,7 +38,7 @@ export default function UploadPage({ onNavigate, onUploadComplete }: UploadPageP
 
   const handleFile = async (file: File) => {
     if (file.type !== 'application/pdf') {
-      alert('Please upload a PDF file')
+      alert('กรุณาอัพโหลดไฟล์ PDF เท่านั้น')
       return
     }
 
@@ -71,11 +71,11 @@ export default function UploadPage({ onNavigate, onUploadComplete }: UploadPageP
       })
       localStorage.setItem('indiebook_books', JSON.stringify(books))
 
-      alert('Book uploaded successfully!')
+      alert('อัพโหลดหนังสือสำเร็จ!')
       onUploadComplete(data.bookId)
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Failed to upload book. Please try again.')
+      alert('ไม่สามารถอัพโหลดหนังสือได้ กรุณาลองอีกครั้ง')
     } finally {
       setUploading(false)
     }
@@ -84,9 +84,9 @@ export default function UploadPage({ onNavigate, onUploadComplete }: UploadPageP
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Upload Your Book</h2>
+        <h2 className="text-3xl font-bold text-gray-900">อัพโหลดหนังสือของคุณ</h2>
         <p className="mt-2 text-gray-600">
-          Upload a PDF file to add it to your library
+          อัพโหลดไฟล์ PDF เพื่อเพิ่มเข้าสู่ห้องสมุดของคุณ
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export default function UploadPage({ onNavigate, onUploadComplete }: UploadPageP
           <div className="mt-4">
             <label htmlFor="file-upload" className="cursor-pointer">
               <span className="mt-2 block text-sm font-medium text-gray-900">
-                {dragActive ? 'Drop your PDF here' : 'Drop your PDF here or click to browse'}
+                {dragActive ? 'วาง PDF ของคุณที่นี่' : 'ลากไฟล์ PDF มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์'}
               </span>
               <input
                 id="file-upload"
@@ -117,13 +117,13 @@ export default function UploadPage({ onNavigate, onUploadComplete }: UploadPageP
               />
             </label>
             <p className="mt-1 text-xs text-gray-500">
-              PDF files only, up to 50MB
+              ไฟล์ PDF เท่านั้น ขนาดไม่เกิน 50MB
             </p>
           </div>
           {uploading && (
             <div className="mt-4">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-              <p className="mt-2 text-sm text-gray-600">Uploading...</p>
+              <p className="mt-2 text-sm text-gray-600">กำลังอัพโหลด...</p>
             </div>
           )}
         </div>
@@ -133,7 +133,7 @@ export default function UploadPage({ onNavigate, onUploadComplete }: UploadPageP
             onClick={() => onNavigate('library')}
             className="block w-full text-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            Go to Library
+            ไปที่ห้องสมุด
           </button>
         </div>
       </div>

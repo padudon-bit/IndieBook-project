@@ -1,12 +1,13 @@
 import { Providers } from './components/Providers'
 import { useState } from 'react'
-import { BookOpen, Upload, Library, Home } from 'lucide-react'
+import { BookOpen, Upload, Library, Home, Shield } from 'lucide-react'
 import HomePage from './pages/HomePage'
 import LibraryPage from './pages/LibraryPage'
 import UploadPage from './pages/UploadPage'
 import ReaderPage from './pages/ReaderPage'
+import AdminPage from './pages/AdminPage'
 
-type Page = 'home' | 'library' | 'upload' | 'reader'
+type Page = 'home' | 'library' | 'upload' | 'reader' | 'admin'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home')
@@ -27,6 +28,8 @@ function App() {
         return <UploadPage onNavigate={setCurrentPage} onUploadComplete={openReader} />
       case 'reader':
         return <ReaderPage bookId={selectedBookId} onNavigate={setCurrentPage} />
+      case 'admin':
+        return <AdminPage onNavigate={setCurrentPage} />
       default:
         return <HomePage onNavigate={setCurrentPage} />
     }
@@ -53,7 +56,7 @@ function App() {
                   }`}
                 >
                   <Home className="h-4 w-4 mr-1" />
-                  Home
+                  หน้าหลัก
                 </button>
                 <button
                   onClick={() => setCurrentPage('library')}
@@ -64,14 +67,25 @@ function App() {
                   }`}
                 >
                   <Library className="h-4 w-4 mr-1" />
-                  Library
+                  ห้องสมุด
                 </button>
                 <button
                   onClick={() => setCurrentPage('upload')}
                   className="flex items-center bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium"
                 >
                   <Upload className="h-4 w-4 mr-1" />
-                  Upload
+                  อัพโหลด
+                </button>
+                <button
+                  onClick={() => setCurrentPage('admin')}
+                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                    currentPage === 'admin'
+                      ? 'bg-purple-50 text-purple-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Shield className="h-4 w-4 mr-1" />
+                  ผู้ดูแล
                 </button>
               </nav>
             </div>

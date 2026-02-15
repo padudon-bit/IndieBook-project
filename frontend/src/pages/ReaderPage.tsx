@@ -50,12 +50,12 @@ export default function ReaderPage({ bookId, onNavigate }: ReaderPageProps) {
   if (!book) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <p className="text-gray-600">Book not found</p>
+        <p className="text-gray-600">ไม่พบหนังสือ</p>
         <button
           onClick={() => onNavigate('library')}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          Back to Library
+          กลับไปห้องสมุด
         </button>
       </div>
     )
@@ -72,7 +72,7 @@ export default function ReaderPage({ bookId, onNavigate }: ReaderPageProps) {
               className="flex items-center text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
+              กลับ
             </button>
 
             <div className="flex-1 text-center">
@@ -87,7 +87,7 @@ export default function ReaderPage({ bookId, onNavigate }: ReaderPageProps) {
                 <button
                   onClick={zoomOut}
                   className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md"
-                  title="Zoom out"
+                  title="ซูมออก"
                 >
                   <ZoomOut className="h-4 w-4" />
                 </button>
@@ -95,7 +95,7 @@ export default function ReaderPage({ bookId, onNavigate }: ReaderPageProps) {
                 <button
                   onClick={zoomIn}
                   className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md"
-                  title="Zoom in"
+                  title="ซูมเข้า"
                 >
                   <ZoomIn className="h-4 w-4" />
                 </button>
@@ -139,7 +139,7 @@ export default function ReaderPage({ bookId, onNavigate }: ReaderPageProps) {
             }
             error={
               <div className="flex items-center justify-center h-96 w-96 text-red-600">
-                Failed to load PDF
+                ไม่สามารถโหลด PDF ได้
               </div>
             }
           >
